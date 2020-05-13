@@ -15,12 +15,11 @@ export class CockpitComponent implements OnInit {
 
   }
 
-  displayedColumns: string[] = ['name', 'status'];
+  displayedColumns: string[] = ['name', 'test', 'status'];
 
   dataSource$: Observable<any>;
   clientCount$: Observable<number>;
   serviceConnected$: Observable<boolean>;
-  message$: Observable<any>;
 
   ngOnInit(): void {
 
