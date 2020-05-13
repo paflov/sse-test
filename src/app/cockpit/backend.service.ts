@@ -1,8 +1,14 @@
-import { Injectable } from '@angular/core';
-import { Subject, Observer, Observable } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
 import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 import {WebSocketMessage} from 'rxjs/internal/observable/dom/WebSocketSubject';
+import {map} from 'rxjs/operators';
 
+
+interface WsMessage {
+  event: string;
+  data: any;
+}
 
 @Injectable()
 export class BackendService {
@@ -33,29 +39,30 @@ export class BackendService {
       this.subject = webSocket(jonfig);
       this.subject
           .subscribe(
-              (msg) => console.log('message received: ' + msg),
+              (msg) => console.log('message received: ', msg),
               (err) => console.log(err),
               () => console.log('complete')
           );
     }
 
-    const e = {
-      event: 'events',
-      data: 'dafuq'
-    };
-    this.subject.next(e);
-    // this.subject.next(e);
-
-
-    const clientCount$ = this.subject.multiplex(
-         () => ({event: 'clients.count'}), // When server gets this message, it will start sending messages for 'A'...
-         () => ({unsubscribe: 'clients.count'}), // ...and when gets this one, it will stop.
-         message => message.type === 'clients.count'
-         // If the function returns `true` message is passed down the stream. Skipped if the function returns false.
-    );
-    const subA = clientCount$.subscribe(messageForA => console.log(messageForA));
-    subA.unsubscribe();
-
     return this.subject;
+  }
+
+
+  public send(event: string, data: any) {
+
+    this.subject.next({event, data});
+  }
+
+
+  public observe<T>(subscriptionName: string): Observable<T> {
+
+    return this.subject.multiplex(
+        () => ({event: `subscribe:${subscriptionName}`}),
+        () => ({event: `unsubscribe:${subscriptionName}`}),
+        message => {
+          return message.event === subscriptionName;
+        }
+    ).pipe(map((event: WsMessage): T => event.data));
   }
 }
