@@ -7,3 +7,9 @@ export interface RunningBooklet  {
     'lastlogin': string;
     'laststart': string;
 }
+
+export interface TestInstance {
+
+    person: string;
+    status: string;
+}

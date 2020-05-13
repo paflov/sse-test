@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {Observable, Subject} from 'rxjs';
 import {BackendService} from './backend.service';
+import {TestInstance} from './cockpit.interfaces';
 
 
 @Component({
@@ -14,38 +15,26 @@ export class CockpitComponent implements OnInit {
 
   }
 
-  displayedColumns: string[] = ['name', 'booklet', 'locked', 'lastlogin', 'laststart'];
+  displayedColumns: string[] = ['name', 'status'];
 
-  dataSource$: Subject<any>;
+  dataSource$: Observable<any>;
   clientCount$: Observable<number>;
   serviceConnected$: Observable<boolean>;
+  message$: Observable<any>;
 
   ngOnInit(): void {
 
     console.log('going to connect');
 
-    // this.dataSource$ = this.bs.connect();
-
-    // const subject = this.bs.connect();
-
-
-    // subject.subscribe(x => {
-    //   console.log('got:', x);
-    // });
-
     this.clientCount$ = this.bs.observe<number>('client.count');
-    this.clientCount$.subscribe(d => {
-       console.log('got:', d);
-    });
-    this.clientCount$.subscribe(d => {
-       console.log('got2:', d);
-    });
 
     this.serviceConnected$ = this.bs.serviceConnected$;
 
     this.serviceConnected$.subscribe(s => {
       console.log('connection-status', s);
     });
+
+    this.dataSource$ = this.bs.observe<TestInstance[]>('tests');
 
   }
 

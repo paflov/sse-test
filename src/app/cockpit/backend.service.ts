@@ -114,15 +114,9 @@ export class BackendService {
 
     return this.webSocketSubject$
         .multiplex(
-          () => {
-            console.log('XXX SUBS');
-            return {event: `subscribe:${subscriptionName}`};
-          },
+          () => ({event: `subscribe:${subscriptionName}`}),
           () => ({event: `unsubscribe:${subscriptionName}`}),
-          message => {
-            // console.log('MSG', message);
-            return message.event === subscriptionName;
-          }
+          message => (message.event === subscriptionName)
       )
         .pipe(map((event: WsMessage): T => event.data))
         .pipe(share());
