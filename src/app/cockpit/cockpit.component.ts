@@ -37,6 +37,9 @@ export class CockpitComponent implements OnInit {
     this.clientCount$.subscribe(d => {
        console.log('got:', d);
     });
+    this.clientCount$.subscribe(d => {
+       console.log('got2:', d);
+    });
 
     this.serviceConnected$ = this.bs.serviceConnected$;
 

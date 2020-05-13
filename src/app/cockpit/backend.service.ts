@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 import {WebSocketMessage} from 'rxjs/internal/observable/dom/WebSocketSubject';
-import {filter, map} from 'rxjs/operators';
+import {filter, map, share} from 'rxjs/operators';
 
 
 interface WsMessage {
@@ -67,7 +67,7 @@ export class BackendService {
 
       this.webSocketSubject$.subscribe(
 
-          console.log,
+          () => {},
 
           () => {
             console.log('connection error');
@@ -98,18 +98,33 @@ export class BackendService {
 
   public send(event: string, data: any) {
 
+    if (!this.webSocketSubject$) {
+      this.connect();
+    }
+
     this.webSocketSubject$.next({event, data});
   }
 
 
   public observe<T>(subscriptionName: string): Observable<T> {
 
-    return this.webSocketSubject$.multiplex(
-        () => ({event: `subscribe:${subscriptionName}`}),
-        () => ({event: `unsubscribe:${subscriptionName}`}),
-        message => {
-          return message.event === subscriptionName;
-        }
-    ).pipe(map((event: WsMessage): T => event.data));
+    if (!this.webSocketSubject$) {
+      this.connect();
+    }
+
+    return this.webSocketSubject$
+        .multiplex(
+          () => {
+            console.log('XXX SUBS');
+            return {event: `subscribe:${subscriptionName}`};
+          },
+          () => ({event: `unsubscribe:${subscriptionName}`}),
+          message => {
+            // console.log('MSG', message);
+            return message.event === subscriptionName;
+          }
+      )
+        .pipe(map((event: WsMessage): T => event.data))
+        .pipe(share());
   }
 }
