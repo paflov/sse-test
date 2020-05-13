@@ -1,6 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Observable, of, Subject} from 'rxjs';
-import {RunningBooklet} from './cockpit.interfaces';
+import {Observable, Subject} from 'rxjs';
 import {BackendService} from './backend.service';
 
 
@@ -19,6 +18,7 @@ export class CockpitComponent implements OnInit {
 
   dataSource$: Subject<any>;
   clientCount$: Observable<number>;
+  serviceConnected$: Observable<boolean>;
 
   ngOnInit(): void {
 
@@ -26,7 +26,7 @@ export class CockpitComponent implements OnInit {
 
     // this.dataSource$ = this.bs.connect();
 
-    const subject = this.bs.connect();
+    // const subject = this.bs.connect();
 
 
     // subject.subscribe(x => {
@@ -36,6 +36,12 @@ export class CockpitComponent implements OnInit {
     this.clientCount$ = this.bs.observe<number>('client.count');
     this.clientCount$.subscribe(d => {
        console.log('got:', d);
+    });
+
+    this.serviceConnected$ = this.bs.serviceConnected$;
+
+    this.serviceConnected$.subscribe(s => {
+      console.log('connection-status', s);
     });
 
   }

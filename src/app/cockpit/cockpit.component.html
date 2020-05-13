@@ -1,4 +1,5 @@
 <p>Connected Admins: {{clientCount$ | async}}</p>
+<p>Broadcast Service Connected: {{(serviceConnected$ | async) ? 'yes' : 'no'}}</p>
 
 <table mat-table [dataSource]="dataSource$" class="mat-elevation-z8">
 

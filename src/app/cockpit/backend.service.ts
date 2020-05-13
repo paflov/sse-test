@@ -1,8 +1,8 @@
 import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 import {WebSocketMessage} from 'rxjs/internal/observable/dom/WebSocketSubject';
-import {map} from 'rxjs/operators';
+import {filter, map} from 'rxjs/operators';
 
 
 interface WsMessage {
@@ -13,51 +13,98 @@ interface WsMessage {
 @Injectable()
 export class BackendService {
 
-  constructor() {}
+  private url = 'ws://127.0.0.1:3000';
+  private connectionRetries = 5;
+  private connectionRetried = 5;
 
-  private subject: WebSocketSubject<any>;
+  private webSocketSubject$: WebSocketSubject<any>;
 
-  public connect(): WebSocketSubject<any> {
+  public serviceConnected$ = new BehaviorSubject<boolean>(undefined);
 
-    const url = 'ws://127.0.0.1:3000';
+
+  constructor() {
+
+    this.serviceConnected$
+        .pipe(filter((value: boolean) => (value !== undefined)))
+        .subscribe((status: boolean) => {
+
+          if (status === false) {
+            this.tryReconnect();
+          }
+        });
+  }
+
+
+  public connect(forceReconnect: boolean = false): WebSocketSubject<any> {
+
+
     // const url = 'wss://echo.websocket.org';
 
-    if (!this.subject) {
+    if (!this.webSocketSubject$ || forceReconnect) {
 
-      console.log('reconnect');
-      const jonfig = {
+      console.log('connecting...');
+
+      this.webSocketSubject$ = webSocket({
+
         deserializer(event: MessageEvent): any {
-          console.log('deserializer', event);
           return JSON.parse(event.data);
         },
+
         serializer(value: any): WebSocketMessage {
-          console.log('serializer', value);
           return JSON.stringify(value);
         },
-        url
-      };
-      this.subject = webSocket(jonfig);
-      this.subject
-          .subscribe(
-              (msg) => console.log('message received: ', msg),
-              (err) => console.log(err),
-              () => console.log('complete')
-          );
+
+        openObserver: {
+          next: () => {
+            console.log('connection established');
+            this.serviceConnected$.next(true);
+            this.connectionRetried = this.connectionRetries;
+          }
+        },
+
+        url: this.url
+      });
+
+      this.webSocketSubject$.subscribe(
+
+          console.log,
+
+          () => {
+            console.log('connection error');
+            this.serviceConnected$.next(false);
+          },
+
+          () => {
+            console.log('connection closed');
+            this.serviceConnected$.next(false);
+          }
+      );
     }
 
-    return this.subject;
+    return this.webSocketSubject$;
+  }
+
+
+  private tryReconnect() {
+
+    if (this.connectionRetries-- ) {
+      setTimeout(() => {
+        console.log(`trying to reconnect (${this.connectionRetries} left)`);
+        this.connect(true);
+      }, 5000);
+    }
   }
 
 
   public send(event: string, data: any) {
 
-    this.subject.next({event, data});
+    this.webSocketSubject$.next({event, data});
   }
 
 
   public observe<T>(subscriptionName: string): Observable<T> {
 
-    return this.subject.multiplex(
+    return this.webSocketSubject$.multiplex(
         () => ({event: `subscribe:${subscriptionName}`}),
         () => ({event: `unsubscribe:${subscriptionName}`}),
         message => {
