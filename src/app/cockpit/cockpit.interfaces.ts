@@ -1,16 +1,8 @@
-export interface RunningBooklet  {
-    'groupname': string;
-    'loginname': string;
-    'code': string;
-    'bookletname': string;
-    'locked': false;
-    'lastlogin': string;
-    'laststart': string;
-}
+export interface StatusUpdate {
 
-export interface TestInstance {
-
-    person: string;
-    status: string;
+    person: number;
+    status: number;
     test: string;
+    personName?: string;
+    testName?: string;
 }

@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {Observable, Subject} from 'rxjs';
 import {BackendService} from './backend.service';
-import {TestInstance} from './cockpit.interfaces';
+import {StatusUpdate} from './cockpit.interfaces';
 
 
 @Component({
@@ -33,7 +33,7 @@ export class CockpitComponent implements OnInit {
       console.log('connection-status', s);
     });
 
-    this.dataSource$ = this.bs.observe<TestInstance[]>('tests');
+    this.dataSource$ = this.bs.observe<StatusUpdate[]>('status');
 
   }
 
