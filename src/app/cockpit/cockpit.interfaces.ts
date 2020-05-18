@@ -7,11 +7,15 @@ export interface StatusUpdate {
     personStatus?: string;
     testId?: number;
     testLabel?: string;
+    testState: {
+        [testStateKey: string]: string
+    };
     testStateKey?: string;
     testStateValue?: string;
     unitName?: string;
     unitLabel?: string;
-    unitStateKey?: string;
-    unitStateValue?: string;
+    unitState: {
+        [unitStateKey: string]: string
+    };
     timestamp: number;
 }
