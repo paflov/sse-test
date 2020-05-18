@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Observable, Subject} from 'rxjs';
+import {Observable} from 'rxjs';
 import {BackendService} from './backend.service';
 import {StatusUpdate} from './cockpit.interfaces';
 
@@ -15,7 +15,7 @@ export class CockpitComponent implements OnInit {
 
   }
 
-  displayedColumns: string[] = ['name', 'test', 'status'];
+  displayedColumns: string[] = ['name', 'personStatus', 'test', 'testStatus', 'unit', 'unitStatus'];
 
   dataSource$: Observable<any>;
   clientCount$: Observable<number>;
